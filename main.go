@@ -15,5 +15,6 @@ func main() {
 		return
 	}
 
-	fmt.Println(program)
+	// fmt.Println(program) // Parser
+	fmt.Println(program.Body[0].Expression.Evaluate()) // Expressions
 }
