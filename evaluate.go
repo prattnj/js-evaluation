@@ -28,10 +28,11 @@ func evaluateLiteral(e Expression) string {
 
 func evaluateBinary(e Expression) string {
 	left := e.Left.Evaluate()
-	right := e.Right.Evaluate()
 	if hasError(left) {
 		return left
-	} else if hasError(right) {
+	}
+	right := e.Right.Evaluate()
+	if hasError(right) {
 		return right
 	}
 	if valueIsBoolean(left) || valueIsBoolean(right) {
@@ -63,10 +64,11 @@ func evaluateUnary(e Expression) string {
 
 func evaluateLogical(e Expression) string {
 	left := e.Left.Evaluate()
-	right := e.Right.Evaluate()
 	if hasError(left) {
 		return left
-	} else if hasError(right) {
+	}
+	right := e.Right.Evaluate()
+	if hasError(right) {
 		return right
 	}
 	if !valueIsBoolean(left) || !valueIsBoolean(right) {
@@ -170,7 +172,7 @@ func getBoolFromValue(str string) bool {
 }
 
 func newError(str string) string {
-	return "(error (\"banana: " + str + "\"))"
+	return "(error \"banana: " + str + "\")"
 }
 
 func newValue(str string) string {
