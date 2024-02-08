@@ -51,7 +51,3 @@ func (e Expression) String() string {
 	}
 	return "(" + result + ")"
 }
-
-func isArithmeticOperator(op string) bool {
-	return op == "+" || op == "-" || op == "*" || op == "/"
-}
