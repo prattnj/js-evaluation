@@ -157,7 +157,7 @@ func valueIsBoolean(str string) bool {
 }
 
 func getNumberFromValue(str string) int {
-	re := regexp.MustCompile(`\((value \(number (\d+)\))\)`)
+	re := regexp.MustCompile(`\((value \(number (-?\d+)\))\)`)
 
 	match := re.FindStringSubmatch(str)
 
