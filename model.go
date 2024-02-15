@@ -1,15 +1,18 @@
 package main
 
 type Program struct {
-	Body []ExpressionStatement `json:"body"`
+	Body []BodyChild `json:"body"`
 }
 
-func (p Program) String() string {
-	return p.Body[0].Expression.String()
+type BodyChild struct {
+	Type         string               `json:"type"`
+	Declarations []VariableDeclarator `json:"declarations"`
+	Expression   Expression           `json:"expression"`
 }
 
-type ExpressionStatement struct {
-	Expression Expression `json:"expression"`
+type VariableDeclarator struct {
+	Id   Expression `json:"id"`
+	Init Expression `json:"init"`
 }
 
 type Expression struct {
@@ -22,6 +25,7 @@ type Expression struct {
 	Alternate  *Expression `json:"alternate"`
 	Raw        string      `json:"raw"`
 	Argument   *Expression `json:"argument"`
+	Name       string      `json:"name"`
 }
 
 func (e Expression) String() string {

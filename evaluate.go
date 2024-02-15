@@ -6,8 +6,31 @@ import (
 	"strings"
 )
 
+var variables = make(map[string]string)
+
+func (p Program) Evaluate() string {
+	for _, child := range p.Body {
+		if child.Type == "VariableDeclaration" {
+			for _, decl := range child.Declarations {
+				name := decl.Id.Name
+				expr := decl.Init.Evaluate()
+				if hasError(expr) {
+					return expr
+				} else {
+					variables[name] = expr
+				}
+			}
+		} else {
+			return child.Expression.Evaluate()
+		}
+	}
+	return ""
+}
+
 func (e Expression) Evaluate() string {
 	switch e.Type {
+	case "Identifier":
+		return evaluateIdentifier(e)
 	case "Literal":
 		return evaluateLiteral(e)
 	case "BinaryExpression":
@@ -20,6 +43,14 @@ func (e Expression) Evaluate() string {
 		return evaluateConditional(e)
 	}
 	return ""
+}
+
+func evaluateIdentifier(e Expression) string {
+	expr, ok := variables[e.Name]
+	if !ok {
+		return newError("unbound identifier")
+	}
+	return expr
 }
 
 func evaluateLiteral(e Expression) string {
@@ -172,7 +203,7 @@ func getBoolFromValue(str string) bool {
 }
 
 func newError(str string) string {
-	return "(error \"banana: " + str + "\")"
+	return "(error \"" + str + " banana\")"
 }
 
 func newValue(str string) string {
