@@ -1,17 +1,28 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
 )
 
 func main() {
-	devMode := false
+	//devMode := false
 
 	var program Program
+	var data string
 
-	if devMode {
+	// Read piped input from os.Stdin
+	scanner := bufio.NewScanner(os.Stdin)
+
+	// Read input line by line
+	for scanner.Scan() {
+		input := scanner.Text()
+		data += input
+	}
+
+	/*if devMode {
 		content, err := os.ReadFile("test8.json")
 		if err != nil {
 			return
@@ -26,6 +37,15 @@ func main() {
 		if err != nil {
 			fmt.Println(err)
 			return
+		}
+	}*/
+	for {
+		err := json.Unmarshal([]byte(data), &program)
+		if err == nil {
+			break
+		} else {
+			//fmt.Println(err)
+			data = data[1:]
 		}
 	}
 
