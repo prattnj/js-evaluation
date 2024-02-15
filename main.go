@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	//devMode := false
+	devMode := false
 
 	var program Program
 	var data string
@@ -22,7 +22,7 @@ func main() {
 		data += input
 	}
 
-	/*if devMode {
+	if devMode {
 		content, err := os.ReadFile("test8.json")
 		if err != nil {
 			return
@@ -33,19 +33,14 @@ func main() {
 			return
 		}
 	} else {
-		err := json.Unmarshal([]byte(os.Args[1]), &program)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-	}*/
-	for {
-		err := json.Unmarshal([]byte(data), &program)
-		if err == nil {
-			break
-		} else {
-			//fmt.Println(err)
-			data = data[1:]
+		for {
+			err := json.Unmarshal([]byte(data), &program)
+			if err == nil {
+				break
+			} else {
+				// necessary for strange file encodings
+				data = data[1:]
+			}
 		}
 	}
 
