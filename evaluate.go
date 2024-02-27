@@ -69,7 +69,7 @@ func evaluateBinary(e Expression) string {
 	if hasError(right) {
 		return right
 	}
-	if valueIsBoolean(left) || valueIsBoolean(right) {
+	if valueIsBoolean(left) || valueIsBoolean(right) || left == "" || right == "" {
 		return newError("invalid binary type(s)")
 	}
 
@@ -182,11 +182,17 @@ func evaluateCall(e Expression) Value {
 		// recursive calling
 		e.Callee.Scope = e.Scope
 		result := e.Callee.Evaluate()
+		if result.StringValue != "" {
+			return result
+		}
 		f = result.FunctionValue
 	} else {
 		val, ok := getIdentifierValue(e.Callee.Name, e.Scope)
 		if !ok {
 			return newStringValue(newError("unbound identifier"))
+		}
+		if val.StringValue != "" {
+			return newStringValue(newError("not a function"))
 		}
 		f = val.FunctionValue
 	}
