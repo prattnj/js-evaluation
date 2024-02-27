@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	devMode := true
+	devMode := false
 
 	var program Program
 	var data string
