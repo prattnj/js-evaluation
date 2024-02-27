@@ -8,19 +8,10 @@ import (
 )
 
 func main() {
-	devMode := false
+	devMode := true
 
 	var program Program
 	var data string
-
-	// Read piped input from os.Stdin
-	scanner := bufio.NewScanner(os.Stdin)
-
-	// Read input line by line
-	for scanner.Scan() {
-		input := scanner.Text()
-		data += input
-	}
 
 	if devMode {
 		content, err := os.ReadFile("test8.json")
@@ -33,6 +24,15 @@ func main() {
 			return
 		}
 	} else {
+		// Read piped input from os.Stdin
+		scanner := bufio.NewScanner(os.Stdin)
+
+		// Read input line by line
+		for scanner.Scan() {
+			input := scanner.Text()
+			data += input
+		}
+
 		for {
 			err := json.Unmarshal([]byte(data), &program)
 			if err == nil {
@@ -44,6 +44,6 @@ func main() {
 		}
 	}
 
-	// fmt.Println(program) // Parser
+	//fmt.Println(&program) // Parser
 	fmt.Println(program.Evaluate()) // Expressions
 }

@@ -1,57 +1,62 @@
 package main
 
 type Program struct {
-	Body []BodyChild `json:"body"`
+	Body []ProgramChild `json:"body"`
 }
 
-type BodyChild struct {
-	Type         string               `json:"type"`
-	Declarations []VariableDeclarator `json:"declarations"`
-	Expression   Expression           `json:"expression"`
+type ProgramChild struct {
+	Type         string       `json:"type"`
+	Expression   Expression   `json:"expression"`
+	Declarations []Expression `json:"declarations"`
 }
 
-type VariableDeclarator struct {
-	Id   Expression `json:"id"`
-	Init Expression `json:"init"`
+type BlockStatement struct {
+	Body []BlockChild `json:"body"`
+}
+
+type BlockChild struct {
+	Type         string       `json:"type"`
+	Argument     Expression   `json:"argument"`
+	Declarations []Expression `json:"declarations"`
 }
 
 type Expression struct {
-	Type       string      `json:"type"`
-	Left       *Expression `json:"left"`
-	Operator   string      `json:"operator"`
-	Right      *Expression `json:"right"`
-	Test       *Expression `json:"test"`
-	Consequent *Expression `json:"consequent"`
-	Alternate  *Expression `json:"alternate"`
-	Raw        string      `json:"raw"`
-	Argument   *Expression `json:"argument"`
-	Name       string      `json:"name"`
+	Type       string          `json:"type"` // all of them
+	Scope      *Scope          // all of them
+	Left       *Expression     `json:"left"`       // binary, logical
+	Operator   string          `json:"operator"`   // binary, logical
+	Right      *Expression     `json:"right"`      // binary, logical
+	Test       *Expression     `json:"test"`       // conditional
+	Consequent *Expression     `json:"consequent"` // conditional
+	Alternate  *Expression     `json:"alternate"`  // conditional
+	Raw        string          `json:"raw"`        // literal
+	Argument   *Expression     `json:"argument"`   // unary
+	Name       string          `json:"name"`       // identifier
+	Params     []Expression    `json:"params"`     // function
+	Body       *BlockStatement `json:"body"`       // function
+	Callee     *Expression     `json:"callee"`     // call
+	Arguments  []Expression    `json:"arguments"`  // call
+	Id         *Expression     `json:"id"`         // variable declarator
+	Init       *Expression     `json:"init"`       // variable declarator
 }
 
-func (e Expression) String() string {
-	var result string
-	switch e.Type {
-	case "Literal":
-		if e.Raw == "true" || e.Raw == "false" {
-			result = "boolean " + e.Raw
-		} else {
-			result = "number " + e.Raw
-		}
-	case "BinaryExpression":
-		if isArithmeticOperator(e.Operator) {
-			result = "arithmetic "
-		} else {
-			result = "relational "
-		}
-		result += e.Operator + " " + e.Left.String() + " " + e.Right.String()
-	case "UnaryExpression":
-		result = "unary " + e.Operator + " " + e.Argument.String()
-	case "LogicalExpression":
-		result = "logical " + e.Operator + " " + e.Left.String() + " " + e.Right.String()
-	case "ConditionalExpression":
-		result = "conditional " + e.Test.String() + " " + e.Consequent.String() + " " + e.Alternate.String()
-	default:
-		return ""
-	}
-	return "(" + result + ")"
+type Function struct {
+	Parameters []Parameter
+	Body       BlockStatement
+	Scope      *Scope // the scope that the function lies within. If x is declared in this function, this scope doesn't have it
+}
+
+type Value struct {
+	StringValue   string
+	FunctionValue Function
+}
+
+type Parameter struct {
+	Name  string
+	Value Value
+}
+
+type Scope struct {
+	Variables map[string]Value
+	Parent    *Scope
 }
