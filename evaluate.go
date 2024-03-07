@@ -37,7 +37,7 @@ func (e Expression) Evaluate() Value {
 	case "LogicalExpression":
 		return newStringValue(evaluateLogical(e))
 	case "ConditionalExpression":
-		return newStringValue(evaluateConditional(e))
+		return evaluateConditional(e)
 	case "FunctionExpression":
 		return newFunctionValue(evaluateFunction(e))
 	case "CallExpression":
@@ -129,22 +129,22 @@ func evaluateLogical(e Expression) string {
 	return newFinalValue(boolAsString(result))
 }
 
-func evaluateConditional(e Expression) string {
+func evaluateConditional(e Expression) Value {
 	e.Test.Scope = e.Scope
 	test := e.Test.Evaluate().StringValue
 	if hasError(test) {
-		return test
+		return newStringValue(test)
 	}
 	if !valueIsBoolean(test) {
-		return newError("invalid conditional type(s)")
+		return newStringValue(newError("invalid conditional type(s)"))
 	}
 
 	if getBoolFromValue(test) {
 		e.Consequent.Scope = e.Scope
-		return e.Consequent.Evaluate().StringValue
+		return e.Consequent.Evaluate()
 	} else {
 		e.Alternate.Scope = e.Scope
-		return e.Alternate.Evaluate().StringValue
+		return e.Alternate.Evaluate()
 	}
 }
 
@@ -188,7 +188,7 @@ func evaluateCall(e Expression) Value {
 		e.Callee.Scope = e.Scope
 		result := e.Callee.Evaluate()
 		if result.StringValue != "" {
-			return result
+			return newStringValue(newError("not a function"))
 		}
 		f = result.FunctionValue
 	} else {
