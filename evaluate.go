@@ -71,18 +71,21 @@ func evaluateBinary(e Expression) string {
 	if hasError(right) {
 		return right
 	}
-	if valueIsBoolean(left) || valueIsBoolean(right) || left == "" || right == "" {
+	leftNumeric, err := getNumberFromValue(left)
+	if err != "" {
+		return newError("invalid binary type(s)")
+	}
+	rightNumeric, err := getNumberFromValue(right)
+	if err != "" {
 		return newError("invalid binary type(s)")
 	}
 
-	leftVal := getNumberFromValue(left)
-	rightVal := getNumberFromValue(right)
 	if isArithmeticOperator(e.Operator) {
 		// Arithmetic evaluation
-		return doMath(leftVal, rightVal, e.Operator)
+		return doMath(leftNumeric, rightNumeric, e.Operator)
 	} else {
 		// Relational evaluation
-		return doComparison(leftVal, rightVal, e.Operator)
+		return doComparison(leftNumeric, rightNumeric, e.Operator)
 	}
 }
 
@@ -350,15 +353,18 @@ func valueIsBoolean(str string) bool {
 	return strings.Contains(str, "boolean")
 }
 
-func getNumberFromValue(str string) int {
+func getNumberFromValue(str string) (int, string) {
 	re := regexp.MustCompile(`\((value \(number (-?\d+)\))\)`)
 
 	match := re.FindStringSubmatch(str)
+	if len(match) < 3 {
+		return 0, "error"
+	}
 
 	numberStr := match[2]
 	number, _ := strconv.Atoi(numberStr)
 
-	return number
+	return number, ""
 }
 
 func getBoolFromValue(str string) bool {
