@@ -16,7 +16,7 @@ func (p Program) Evaluate() string {
 	if result.StringValue != "" {
 		return result.StringValue
 	}
-	return evaluateValue(result)
+	return newFinalValue("function")
 }
 
 func (e Expression) Evaluate() Value {
@@ -42,6 +42,8 @@ func (e Expression) Evaluate() Value {
 		return newFunctionValue(evaluateFunction(e))
 	case "CallExpression":
 		return evaluateCall(e)
+	case "AssignmentExpression":
+		return newStringValue(evaluateAssignment(e))
 	}
 	return Value{}
 }
@@ -202,6 +204,24 @@ func evaluateCall(e Expression) Value {
 	return f.ExecuteFunction()
 }
 
+func evaluateAssignment(e Expression) string {
+	// check if left identifier exists
+	_, exists := getIdentifierValue(e.Left.Name, e.Scope)
+	if !exists {
+		return newError("unbound identifier")
+	}
+	// evaluate right side
+	e.Right.Scope = e.Scope
+	value := e.Right.Evaluate()
+	if hasError(value.StringValue) {
+		return value.StringValue
+	}
+	// assign identifier to value
+	//e.Scope.Variables[e.Left.Name] = value
+	setIdentifierValue(e.Left.Name, value, e.Scope)
+	return newFinalValue("void")
+}
+
 func (f Function) ExecuteFunction() Value {
 	// look through bottom-most scope, then parameters, then f.scope...
 	paramScope := Scope{
@@ -221,7 +241,13 @@ func (f Function) ExecuteFunction() Value {
 			if err != nil {
 				return newStringValue(err.Error())
 			}
-		} else { // the final return statement
+		} else if statement.Argument.Type == "" { // anything before the first return statement
+			statement.Expression.Scope = bottomScope
+			value := statement.Expression.Evaluate()
+			if hasError(value.StringValue) {
+				return value
+			}
+		} else { // the first return statement
 			statement.Argument.Scope = bottomScope
 			return statement.Argument.Evaluate()
 		}
@@ -231,7 +257,7 @@ func (f Function) ExecuteFunction() Value {
 
 // Helper methods
 func handleBody(body []ProgramChild, scope *Scope) Value { // for the whole program
-	for _, child := range body {
+	for i, child := range body {
 		if child.Type == "VariableDeclaration" {
 			err := handleDeclarations(child.Declarations, scope)
 			if err != nil {
@@ -239,7 +265,13 @@ func handleBody(body []ProgramChild, scope *Scope) Value { // for the whole prog
 			}
 		} else {
 			child.Expression.Scope = scope
-			return child.Expression.Evaluate()
+			value := child.Expression.Evaluate()
+			if hasError(value.StringValue) {
+				return value
+			}
+			if i == len(body)-1 {
+				return value
+			}
 		}
 	}
 	return Value{}
@@ -263,14 +295,6 @@ func handleDeclarations(declarations []Expression, scope *Scope) error {
 		}
 	}
 	return nil
-}
-
-func evaluateValue(val Value) string {
-	if val.StringValue != "" {
-		return newFinalValue(val.StringValue)
-	} else {
-		return newFinalValue("function")
-	}
 }
 
 func doMath(left int, right int, op string) string {
@@ -365,6 +389,8 @@ func newFinalValue(str string) string {
 		result = "boolean " + str
 	} else if str == "function" {
 		result = str
+	} else if str == "void" {
+		result = str
 	} else {
 		if !stringIsWholeNumber(str) {
 			return newError("not a whole number")
@@ -390,6 +416,21 @@ func getIdentifierValue(id string, scope *Scope) (Value, bool) {
 		expr, ok := scope.Variables[id]
 		if ok {
 			return expr, true
+		} else {
+			scope = scope.Parent
+		}
+	}
+}
+
+func setIdentifierValue(id string, val Value, scope *Scope) {
+	for {
+		if scope == nil {
+			return
+		}
+		_, ok := scope.Variables[id]
+		if ok {
+			scope.Variables[id] = val
+			return
 		} else {
 			scope = scope.Parent
 		}

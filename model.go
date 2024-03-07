@@ -17,15 +17,16 @@ type BlockStatement struct {
 type BlockChild struct {
 	Type         string       `json:"type"`
 	Argument     Expression   `json:"argument"`
+	Expression   Expression   `json:"expression"`
 	Declarations []Expression `json:"declarations"`
 }
 
 type Expression struct {
 	Type       string          `json:"type"` // all of them
 	Scope      *Scope          // all of them
-	Left       *Expression     `json:"left"`       // binary, logical
-	Operator   string          `json:"operator"`   // binary, logical
-	Right      *Expression     `json:"right"`      // binary, logical
+	Left       *Expression     `json:"left"`       // binary, logical, assignment
+	Operator   string          `json:"operator"`   // binary, logical, assignment
+	Right      *Expression     `json:"right"`      // binary, logical, assignment
 	Test       *Expression     `json:"test"`       // conditional
 	Consequent *Expression     `json:"consequent"` // conditional
 	Alternate  *Expression     `json:"alternate"`  // conditional

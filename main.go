@@ -44,6 +44,5 @@ func main() {
 		}
 	}
 
-	//fmt.Println(&program) // Parser
-	fmt.Println(program.Evaluate()) // Expressions
+	fmt.Println(program.Evaluate())
 }
