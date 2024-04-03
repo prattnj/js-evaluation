@@ -6,7 +6,7 @@
          net/url
          file/sha1)
 
-(define version "2024.winter.4")
+(define version "2024.winter.5")
 
 (define (url path/query)
   (string->url (string-append "https://byu.kimball.germane.net" path/query)))
@@ -49,7 +49,7 @@
     (if (member (system-type) '(windows))
       (λ (command) (system* "ignore" 'exact command))
       system))
-  
+
   (match (current-command-line-arguments)
     [(vector command-string)
      (match (read-json* (get-pure-port (url (bytes->string/utf-8 (hex-string->bytes (read-key))))))
@@ -68,18 +68,11 @@
              (displayln message)
              (loop (get-pure-port (url k-url)))]
             [(challenge payload k-url)
-             (begin
-               (displayln "\nTest case:")
-               (displayln "PROGRAM INPUT from grader")
-               (displayln payload))
              (let ([os (open-output-string)])
                (if (parameterize ([current-input-port (open-input-string payload)]
                                   [current-output-port os])
                      (run-on-system command-string))
                  (let ([response (get-output-string os)])
-                   (begin
-                     (displayln "PROGRAM OUTPUT from your implementation")
-                     (displayln response))
                    (loop (post-pure-port
                           (url k-url)
                           (with-output-to-bytes (λ () (write-json (hasheq 'response response)))))))
