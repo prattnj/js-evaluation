@@ -259,7 +259,7 @@ func (f Function) ExecuteFunction() Value {
 }
 
 // Helper methods
-func handleBody(body []ProgramChild, scope *Scope) Value { // for the whole program
+func handleBody(body []BlockChild, scope *Scope) Value { // for the whole program
 	for i, child := range body {
 		if child.Type == "VariableDeclaration" {
 			err := handleDeclarations(child.Declarations, scope)

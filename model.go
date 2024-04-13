@@ -1,13 +1,7 @@
 package main
 
 type Program struct {
-	Body []ProgramChild `json:"body"`
-}
-
-type ProgramChild struct {
-	Type         string       `json:"type"`
-	Expression   Expression   `json:"expression"`
-	Declarations []Expression `json:"declarations"`
+	Body []BlockChild `json:"body"`
 }
 
 type BlockStatement struct {
@@ -15,10 +9,14 @@ type BlockStatement struct {
 }
 
 type BlockChild struct {
-	Type         string       `json:"type"`
-	Argument     Expression   `json:"argument"`
-	Expression   Expression   `json:"expression"`
-	Declarations []Expression `json:"declarations"`
+	Type         string         `json:"type"`
+	Argument     Expression     `json:"argument"`
+	Expression   Expression     `json:"expression"`
+	Declarations []Expression   `json:"declarations"`
+	Test         Expression     `json:"test"`   // while, for
+	Body         BlockStatement `json:"body"`   // while, for
+	Init         Expression     `json:"init"`   // for
+	Update       Expression     `json:"update"` // for
 }
 
 type Expression struct {
