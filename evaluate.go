@@ -12,7 +12,7 @@ func (p Program) Evaluate() string {
 		Variables: map[string]Value{},
 		Parent:    nil,
 	}
-	result := handleBody(p.Body, topScope)
+	result := newHandleBody(p.Body, topScope)
 	if result.StringValue != "" {
 		return result.StringValue
 	}
@@ -238,48 +238,44 @@ func (f Function) ExecuteFunction() Value {
 		Variables: map[string]Value{},
 		Parent:    &paramScope,
 	}
-	for _, statement := range f.Body.Body {
+	return newHandleBody(f.Body.Body, bottomScope)
+}
+
+// for the whole program, function bodies, and loop bodies
+func newHandleBody(body []BlockChild, scope *Scope) Value {
+	for i, statement := range body {
 		if statement.Type == "VariableDeclaration" {
-			err := handleDeclarations(statement.Declarations, bottomScope)
+			err := handleDeclarations(statement.Declarations, scope)
 			if err != nil {
 				return newStringValue(err.Error())
 			}
-		} else if statement.Argument.Type == "" { // anything before the first return statement
-			statement.Expression.Scope = bottomScope
+		} else if statement.Type == "ForStatement" || statement.Type == "WhileStatement" {
+			result := handleLoop(statement, scope)
+			if result.StringValue != "" { // either there is an error or a return statement in the loop
+				if result.StringValue == "f" { // double-check this in handleForLoop
+					return newFunctionValue(result.FunctionValue)
+				}
+				return result
+			}
+		} else if statement.Type == "ReturnStatement" {
+			statement.Argument.Scope = scope
+			return statement.Argument.Evaluate()
+		} else { // any ExpressionStatement
+			statement.Expression.Scope = scope
 			value := statement.Expression.Evaluate()
 			if hasError(value.StringValue) {
 				return value
 			}
-		} else { // the first return statement
-			statement.Argument.Scope = bottomScope
-			return statement.Argument.Evaluate()
+			if scope.Parent == nil && i == len(body)-1 {
+				// this is a top-level program, return the value of the final expression
+				return value
+			}
 		}
 	}
 	return Value{}
 }
 
 // Helper methods
-func handleBody(body []BlockChild, scope *Scope) Value { // for the whole program
-	for i, child := range body {
-		if child.Type == "VariableDeclaration" {
-			err := handleDeclarations(child.Declarations, scope)
-			if err != nil {
-				return newStringValue(err.Error())
-			}
-		} else {
-			child.Expression.Scope = scope
-			value := child.Expression.Evaluate()
-			if hasError(value.StringValue) {
-				return value
-			}
-			if i == len(body)-1 {
-				return value
-			}
-		}
-	}
-	return Value{}
-}
-
 func handleDeclarations(declarations []Expression, scope *Scope) error {
 	for _, decl := range declarations {
 		name := decl.Id.Name
@@ -298,6 +294,30 @@ func handleDeclarations(declarations []Expression, scope *Scope) error {
 		}
 	}
 	return nil
+}
+
+func handleLoop(loop BlockChild, scope *Scope) Value {
+	loopScope := Scope{
+		Variables: map[string]Value{},
+		Parent:    scope,
+	}
+	if len(loop.Declarations) == 0 {
+		return handleWhileLoop(loop, &loopScope)
+	} else {
+		return handleForLoop(loop, &loopScope)
+	}
+}
+
+func handleForLoop(loop BlockChild, loopScope *Scope) Value {
+	err := handleDeclarations(loop.Declarations, loopScope)
+	if err != nil {
+		return newStringValue(err.Error())
+	}
+	return Value{}
+}
+
+func handleWhileLoop(loop BlockChild, loopScope *Scope) Value {
+	return Value{}
 }
 
 func doMath(left int, right int, op string) string {
