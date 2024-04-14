@@ -12,7 +12,7 @@ func (p Program) Evaluate() string {
 		Variables: map[string]Value{},
 		Parent:    nil,
 	}
-	result := newHandleBody(p.Body, topScope)
+	result := handleBody(p.Body, topScope)
 	if result.StringValue != "" {
 		return result.StringValue
 	}
@@ -238,11 +238,11 @@ func (f Function) ExecuteFunction() Value {
 		Variables: map[string]Value{},
 		Parent:    &paramScope,
 	}
-	return newHandleBody(f.Body.Body, bottomScope)
+	return handleBody(f.Body.Body, bottomScope)
 }
 
 // for the whole program, function bodies, and loop bodies
-func newHandleBody(body []BlockChild, scope *Scope) Value {
+func handleBody(body []BlockChild, scope *Scope) Value {
 	for i, statement := range body {
 		if statement.Type == "VariableDeclaration" {
 			err := handleDeclarations(statement.Declarations, scope)
