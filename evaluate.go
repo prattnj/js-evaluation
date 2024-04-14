@@ -251,10 +251,7 @@ func handleBody(body []BlockChild, scope *Scope) Value {
 			}
 		} else if statement.Type == "ForStatement" || statement.Type == "WhileStatement" {
 			result := handleLoop(statement, scope)
-			if result.StringValue != "" { // either there is an error or a return statement in the loop
-				if result.StringValue == "f" { // double-check this in handleForLoop
-					return newFunctionValue(result.FunctionValue)
-				}
+			if !valueIsEmpty(result) {
 				return result
 			}
 		} else if statement.Type == "ReturnStatement" {
@@ -318,6 +315,16 @@ func handleForLoop(loop BlockChild, loopScope *Scope) Value {
 
 func handleWhileLoop(loop BlockChild, loopScope *Scope) Value {
 	return Value{}
+}
+
+func valueIsEmpty(value Value) bool {
+	if value.StringValue != "" {
+		return false
+	}
+	if len(value.FunctionValue.Body.Body) != 0 {
+		return false
+	}
+	return value.StringValue == "" && len(value.FunctionValue.Body.Body) == 0
 }
 
 func doMath(left int, right int, op string) string {
