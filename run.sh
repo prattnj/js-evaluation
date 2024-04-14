@@ -1,10 +1,19 @@
 #!/bin/bash
-while true; do
-    read -p "" line
 
-    # Check if the user wants to finish entering expressions
-    if [ "$line" == "" ]; then
-        break
+consecutive_newlines=0
+expressions=""
+
+while true; do
+    read -r -p "" line
+
+    # Check if the line is empty
+    if [ -z "$line" ]; then
+        ((consecutive_newlines++))
+        if [ "$consecutive_newlines" -eq 2 ]; then
+            break
+        fi
+    else
+        consecutive_newlines=0
     fi
 
     # Append the expression to the existing expressions
