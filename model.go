@@ -4,10 +4,6 @@ type Program struct {
 	Body []BlockChild `json:"body"`
 }
 
-type BlockStatement struct {
-	Body []BlockChild `json:"body"`
-}
-
 type BlockChild struct {
 	Type         string         `json:"type"`
 	Argument     Expression     `json:"argument"`
@@ -41,7 +37,7 @@ type Expression struct {
 
 type Function struct {
 	Parameters []Parameter
-	Body       BlockStatement
+	Body       Program
 	Scope      *Scope // the scope that the function lies within. If x is declared in this function, this scope doesn't have it
 }
 
