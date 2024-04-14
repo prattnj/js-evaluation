@@ -298,7 +298,7 @@ func handleLoop(loop BlockChild, scope *Scope) Value {
 		Variables: map[string]Value{},
 		Parent:    scope,
 	}
-	if len(loop.Declarations) == 0 {
+	if loop.Init == nil {
 		return handleWhileLoop(loop, &loopScope)
 	} else {
 		return handleForLoop(loop, &loopScope)
@@ -306,11 +306,32 @@ func handleLoop(loop BlockChild, scope *Scope) Value {
 }
 
 func handleForLoop(loop BlockChild, loopScope *Scope) Value {
-	err := handleDeclarations(loop.Declarations, loopScope)
+	err := handleDeclarations(loop.Init.Declarations, loopScope)
 	if err != nil {
 		return newStringValue(err.Error())
 	}
-	return Value{}
+	for {
+		loop.Test.Scope = loopScope
+		testResult := loop.Test.Evaluate()
+		if hasError(testResult.StringValue) {
+			return testResult
+		}
+		if !valueIsBoolean(testResult.StringValue) {
+			return newStringValue(newError("loop test must be a boolean"))
+		}
+		if !getBoolFromValue(testResult.StringValue) {
+			return Value{}
+		}
+		bodyResult := handleBody(loop.Body.Body, loopScope)
+		if !valueIsEmpty(bodyResult) {
+			return bodyResult
+		}
+		loop.Update.Scope = loopScope
+		updateResult := loop.Update.Evaluate()
+		if hasError(updateResult.StringValue) {
+			return updateResult
+		}
+	}
 }
 
 func handleWhileLoop(loop BlockChild, loopScope *Scope) Value {
