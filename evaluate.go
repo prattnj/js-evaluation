@@ -314,7 +314,23 @@ func handleForLoop(loop BlockChild, loopScope *Scope) Value {
 }
 
 func handleWhileLoop(loop BlockChild, loopScope *Scope) Value {
-	return Value{}
+	for {
+		loop.Test.Scope = loopScope
+		testResult := loop.Test.Evaluate()
+		if hasError(testResult.StringValue) {
+			return testResult
+		}
+		if !valueIsBoolean(testResult.StringValue) {
+			return newStringValue(newError("loop test must be a boolean"))
+		}
+		if !getBoolFromValue(testResult.StringValue) {
+			return Value{}
+		}
+		bodyResult := handleBody(loop.Body.Body, loopScope)
+		if !valueIsEmpty(bodyResult) {
+			return bodyResult
+		}
+	}
 }
 
 func valueIsEmpty(value Value) bool {
