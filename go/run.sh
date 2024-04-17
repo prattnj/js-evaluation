@@ -21,5 +21,5 @@ while true; do
 done
 
 # Save the expressions to the source.js file
-echo -e "$expressions" > source.js
-node_modules/.bin/acorn --ecma2024 source.js | go run .
+echo -e "$expressions" > ../source.js
+node_modules/.bin/acorn --ecma2024 ../source.js | go run .

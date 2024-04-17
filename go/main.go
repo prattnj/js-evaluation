@@ -14,7 +14,7 @@ func main() {
 	var data string
 
 	if devMode {
-		content, err := os.ReadFile("test8.json")
+		content, err := os.ReadFile("../test8.json")
 		if err != nil {
 			return
 		}
