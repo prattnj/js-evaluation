@@ -250,6 +250,7 @@ class Evaluator
   end
 
   def has_error?(str)
+    return if str.nil?
     str.include? 'error'
   end
 
