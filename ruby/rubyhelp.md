@@ -39,7 +39,7 @@ class Bar
 
 
 ## Conditionals
-## Basic if / else if / else
+### Basic if / else if / else
 ```
 if condition
   puts "True"
@@ -49,7 +49,7 @@ else
   puts "False"
 end
 ```
-## Switch statement
+### Switch statement
 ```
 case x
 when 1..5
